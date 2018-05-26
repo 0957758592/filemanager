@@ -6,23 +6,20 @@ import java.nio.file.InvalidPathException;
 public class FileManager {
 
     public static void main(String[] args) throws IOException {
-        System.out.println(calculateFiles("I:/TEST"));
-        System.out.println(calculateDirs("I:/TEST"));
-        copy("I:/TEST", "I:/TEST23");
-        move("I:/TEST23", "H:/TEST");
+//        System.out.println(calculateFiles("C:/Windows"));
+        System.out.println(calculateDirs("C:/Windows"));
+//        copy("I:/TEST", "I:/TEST23");
+//        move("I:/TEST23", "H:/TEST");
     }
 
     public static int calculateFiles(String path) {
-
-
-        File filesPath = new File(path);
+        File pathFile = new File(path);
         int count = 0;
 
-        if (!filesPath.exists()) {
-            throw new InvalidPathException(path, "No such path to file");
-        }
+        isExistFilePath(pathFile, path);
+        checkToAccess(pathFile);
 
-        for (File file : filesPath.listFiles()) {
+        for (File file : pathFile.listFiles()) {
             if (file.isFile()) {
                 count++;
             } else if (file.isDirectory()) {
@@ -37,9 +34,8 @@ public class FileManager {
         int count = 0;
         File pathFile = new File(path);
 
-        if (!pathFile.exists()) {
-            throw new InvalidPathException(path, "No such path to file");
-        }
+        isExistFilePath(pathFile,path);
+        checkToAccess(pathFile);
         for (File file : pathFile.listFiles()) {
             if (file.isDirectory()) {
                 count++;
@@ -54,9 +50,7 @@ public class FileManager {
         File pathFrom = new File(from);
         File pathTo = new File(to);
 
-        if (!pathFrom.exists()) {
-            throw new InvalidPathException(from, "the path is not exist");
-        }
+        isExistFilePath(pathFrom,from);
         if (pathFrom.isDirectory()) {
             if (!pathTo.exists()) {
                 pathTo.mkdirs();
@@ -92,5 +86,18 @@ public class FileManager {
             path.delete();
         }
         directory.delete();
+    }
+
+
+    private static void checkToAccess(File pathFile) {
+        if (pathFile.listFiles() == null) {
+            throw new IllegalAccessError("Access to " + pathFile + " Denied!");
+        }
+    }
+
+    private static void isExistFilePath(File pathFile, String path) {
+        if (!pathFile.exists()) {
+            throw new InvalidPathException(path, "No such path to file");
+        }
     }
 }
