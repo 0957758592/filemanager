@@ -5,25 +5,27 @@ import java.nio.file.InvalidPathException;
 
 public class FileManager {
 
-    public FileManager() {
-
+    public static void main(String[] args) throws IOException {
+        System.out.println(calculateFiles("I:/TEST"));
+        System.out.println(calculateDirs("I:/TEST"));
+        copy("I:/TEST", "I:/TEST23");
+        move("I:/TEST23", "H:/TEST");
     }
 
-    public int calculateFiles(String path) {
+    public static int calculateFiles(String path) {
 
 
         File filesPath = new File(path);
         int count = 0;
 
-        if (filesPath.exists()) {
+        if (!filesPath.exists()) {
             throw new InvalidPathException(path, "No such path to file");
         }
 
         for (File file : filesPath.listFiles()) {
             if (file.isFile()) {
                 count++;
-            }
-            if (file.isDirectory()) {
+            } else if (file.isDirectory()) {
                 count += calculateFiles(file.getAbsolutePath());
             }
         }
@@ -31,11 +33,11 @@ public class FileManager {
     }
 
     //количество папок в папке и всех подпапках по пути
-    public int calculateDirs(String path) {
+    public static int calculateDirs(String path) {
         int count = 0;
         File pathFile = new File(path);
 
-        if (pathFile.exists()) {
+        if (!pathFile.exists()) {
             throw new InvalidPathException(path, "No such path to file");
         }
         for (File file : pathFile.listFiles()) {
@@ -48,53 +50,47 @@ public class FileManager {
     }
 
     //копирование файлов и папок (откуда куда)
-    public void copy(String from, String to) throws IOException {
+    public static void copy(String from, String to) throws IOException {
         File pathFrom = new File(from);
         File pathTo = new File(to);
 
-        if (pathFrom.exists()) {
+        if (!pathFrom.exists()) {
             throw new InvalidPathException(from, "the path is not exist");
         }
-            if (pathFrom.isDirectory()) {
-                if (!pathTo.exists()) {
-                    pathTo.mkdir();
-                }
-                for (String file : pathFrom.list()) {
-                    copy(new File(from, file).toString(), new File(to, file).toString());
-                }
-            } else {
-                InputStream in = null;
-                OutputStream out = null;
+        if (pathFrom.isDirectory()) {
+            if (!pathTo.exists()) {
+                pathTo.mkdirs();
+            }
+            for (String file : pathFrom.list()) {
+                copy(new File(from, file).getPath(), new File(to, file).getPath());
+            }
+        } else {
 
-                try {
-                    in = new FileInputStream(from);
-                    out = new FileOutputStream(to);
-                    byte[] buffer = new byte[2048];
+            try (InputStream in = new FileInputStream(from);
+                 OutputStream out = new FileOutputStream(to)) {
+                byte[] buffer = new byte[2048];
 
-                    int length;
-                    while ((length = in.read(buffer)) > 0) {
-                        out.write(buffer, 0, length);
-                    }
-                } finally {
-                    in.close();
-                    out.close();
+                int length;
+                while ((length = in.read(buffer)) > 0) {
+                    out.write(buffer, 0, length);
                 }
             }
+        }
     }
 
     //перемещение файлов и папок (откуда куда)
-    public void move(String from, String to) throws IOException {
-        File oldFile = new File(from);
+    public static void move(String from, String to) throws IOException {
+        File directory = new File(from);
         File newFile = new File(to);
         if (!newFile.exists()) {
             copy(from, to);
         }
-        for (File file : oldFile.listFiles()) {
-            if (file.isDirectory()) {
-                move(file.getAbsolutePath(), to);
+        for (File path : directory.listFiles()) {
+            if (path.isDirectory()) {
+                move(path.getAbsolutePath(), to);
             }
-            file.delete();
+            path.delete();
         }
-        oldFile.delete();
+        directory.delete();
     }
 }
